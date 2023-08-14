@@ -9,11 +9,27 @@ import styled from 'styled-components'
 interface TodoProps {
   todos: any
   onDragEnd: (result: any) => void
+  deleteTodo: (todo: any) => void
+  completeToggle: (todo: any) => void
+  filterTodos: (filter: string) => void
+  clearCompleted: () => any
+  filterType: string
 }
 
-const TodoList: React.FC<TodoProps> = ({ todos, onDragEnd }) => {
+const TodoList: React.FC<TodoProps> = ({
+  todos,
+  onDragEnd,
+  deleteTodo,
+  completeToggle,
+  filterTodos,
+  filterType,
+  clearCompleted,
+}) => {
   const { theme } = useTheme()
-
+  const handleDeleteTodo = (todoItem: any) => deleteTodo(todoItem)
+  const handleCompleteToggle = (todoItem: any) => completeToggle(todoItem)
+  const handleFilterTodos = (filter: any) => filterTodos(filter)
+  const incompleteTodosCount = todos.filter((todo: any) => !todo.complete).length
   return (
     <ListContainer theme={theme}>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -21,21 +37,31 @@ const TodoList: React.FC<TodoProps> = ({ todos, onDragEnd }) => {
           {(provided: any) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
               {todos.map((todo: any, index: number) => (
-                <Todo todo={todo} index={index} key={index} />
+                <Todo
+                  todo={todo}
+                  index={index}
+                  key={index}
+                  handleDeleteTodo={handleDeleteTodo}
+                  handleCompleteToggle={handleCompleteToggle}
+                />
               ))}
               {provided.placeholder}
             </div>
           )}
         </Droppable>
       </DragDropContext>
-      <FilterOptions />
+      <FilterOptions
+        incompleteTodosCount={incompleteTodosCount}
+        handleFilterTodos={handleFilterTodos}
+        filterType={filterType}
+        handleClear={clearCompleted}
+      />
     </ListContainer>
   )
 }
 
 const ListContainer = styled.div`
   position: relative;
-  top: -50px;
   padding: 5px 0;
   display: block;
   margin: 0 auto;
@@ -44,6 +70,7 @@ const ListContainer = styled.div`
   width: 90vw;
   @media (min-width: 768px) {
     width: 50vw;
+    top: -50px;
   }
   @media (min-width: 1200px) {
     width: 33vw;

@@ -8,22 +8,23 @@ import checkIcon from '../../images/icon-check.svg'
 interface TodoProps {
   todo: any
   index: number
+  handleDeleteTodo: (e: any) => void
+  handleCompleteToggle: (e: any) => void
 }
 
-const Todo: React.FC<TodoProps> = ({ todo, index }) => {
+const Todo: React.FC<TodoProps> = ({ todo, index, handleDeleteTodo, handleCompleteToggle }) => {
   const { theme } = useTheme()
-  const isActive = true
   return (
     <Draggable key={todo.id} draggableId={todo.id} index={index}>
       {(provided: any) => (
         <TodoContainer ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} theme={theme}>
-          <Circle theme={theme}>
+          <Circle theme={theme} onClick={() => handleCompleteToggle(todo)} className={todo.complete ? 'complete' : ''}>
             <div className='outer'>
-              <div className='inner'>{isActive && <img src={checkIcon} />}</div>
+              <div className='inner'>{todo.complete && <img src={checkIcon} />}</div>
             </div>
           </Circle>
           <p>{todo.title}</p>
-          <Delete>
+          <Delete onClick={() => handleDeleteTodo(todo)}>
             <img src={closeIcon} />
           </Delete>
         </TodoContainer>
@@ -63,6 +64,17 @@ const Circle = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  &.complete {
+    .outer {
+      background: linear-gradient(hsl(192, 100%, 67%), hsl(280, 87%, 65%));
+      .inner {
+        background-color: transparent;
+        img {
+          opacity: 1;
+        }
+      }
+    }
+  }
   .outer {
     height: 30px;
     width: 30px;

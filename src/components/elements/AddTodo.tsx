@@ -1,26 +1,38 @@
-import React from 'react'
+import React, { ChangeEvent, useState } from 'react'
 import styled from 'styled-components'
 import { useTheme } from '../../utils/context/ThemeContext'
 
-interface Props {}
+interface Props {
+  addNewTodo: (e: string) => void
+}
 
-const AddTodo: React.FC<Props> = ({}) => {
+const AddTodo: React.FC<Props> = ({ addNewTodo }) => {
   const { theme } = useTheme()
+  const [value, setValue] = useState('')
 
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
+
+  const handleTodoSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (value) {
+      addNewTodo(value)
+    }
+    setValue('')
+  }
   return (
-    <InputContainer theme={theme}>
+    <InputContainer theme={theme} onSubmit={handleTodoSubmit}>
       <Circle theme={theme}>
         <div />
       </Circle>
-      <input placeholder='Create a Todo...' type='text' />
+      <input placeholder='Create a Todo...' type='text' onChange={handleInputChange} value={value} />
     </InputContainer>
   )
 }
 
-const InputContainer = styled.div`
+const InputContainer = styled.form`
   position: absolute;
-  bottom: 75px;
   left: 50%;
+  bottom: 10px;
   transform: translateX(-50%);
   display: grid;
   height: 65px;
@@ -40,6 +52,7 @@ const InputContainer = styled.div`
   }
   @media (min-width: 768px) {
     width: 50vw;
+    bottom: 75px;
   }
   @media (min-width: 1200px) {
     width: 33vw;

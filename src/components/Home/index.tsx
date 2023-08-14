@@ -1,19 +1,20 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import ModeSwitch from '../elements/ModeSwitch'
 import { useTheme } from '../../utils/context/ThemeContext'
 import TodoList from '../TodoList'
 import AddTodo from '../elements/AddTodo'
 
-const todosData = [
-  { id: 'todo-1', title: 'Duran' },
-  { id: 'todo-2', title: 'Bodine' },
-]
-
+interface Todo {
+  id: string
+  title: string
+  complete: boolean
+}
 const Home = () => {
   const { theme } = useTheme()
 
-  const [todos, setTodos] = useState(todosData)
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [filter, setFilter] = useState<string>('all')
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) {
@@ -25,6 +26,51 @@ const Home = () => {
     setTodos(items)
   }
 
+  const createId = (value: string) => {
+    const urlFriendlyString = value.replace(/\s+/g, '-')
+    const randomTwoDigitNumber = Math.floor(Math.random() * 90) + 10
+    return `${urlFriendlyString}-${randomTwoDigitNumber}`
+  }
+
+  const addNewTodo = (title: string) => {
+    const id = createId(title)
+    const newTodo: Todo = {
+      id,
+      title,
+      complete: false,
+    }
+    setTodos((prevTodos) => [...prevTodos, newTodo])
+  }
+
+  const deleteTodo = (todo: Todo) => {
+    const updatedTodos = todos.filter((existingTodo) => existingTodo.id !== todo.id)
+    setTodos(updatedTodos)
+  }
+
+  const completeToggle = (todo: Todo) => {
+    const updatedTodos = todos.map((existingTodo) =>
+      existingTodo.id === todo.id ? { ...existingTodo, complete: !existingTodo.complete } : existingTodo
+    )
+    setTodos(updatedTodos)
+  }
+
+  const filterTodos = (filter: string) => {
+    setFilter(filter)
+  }
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === 'all') {
+      return true
+    } else if (filter === 'incomplete') {
+      return !todo.complete
+    } else if (filter === 'complete') {
+      return todo.complete
+    }
+    return false
+  })
+  const clearCompleted = () => {
+    const incompleteTodos = todos.filter((todo) => !todo.complete)
+    setTodos(incompleteTodos)
+  }
   return (
     <>
       <BannerContainer theme={theme}>
@@ -34,9 +80,19 @@ const Home = () => {
             <ModeSwitch />
           </div>
         </Header>
-        <AddTodo />
+        <AddTodo addNewTodo={addNewTodo} />
       </BannerContainer>
-      <TodoList todos={todos} onDragEnd={handleDragEnd} />
+      {todos.length > 0 && (
+        <TodoList
+          todos={filteredTodos}
+          onDragEnd={handleDragEnd}
+          deleteTodo={deleteTodo}
+          completeToggle={completeToggle}
+          filterTodos={filterTodos}
+          filterType={filter}
+          clearCompleted={clearCompleted}
+        />
+      )}
     </>
   )
 }
